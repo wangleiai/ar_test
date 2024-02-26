@@ -25,6 +25,7 @@
 
 			import * as THREE from 'three';
 			import { ARButton } from 'three/addons/webxr/ARButton.js';
+			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 			let container;
 			let camera, scene, renderer;
@@ -47,9 +48,54 @@
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
 
+				/*
 				const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 3 );
 				light.position.set( 0.5, 1, 0.25 );
-				scene.add( light );
+				scene.add( light ); 
+				*/
+
+
+				// 创建GLTF加载器对象
+				const loader = new GLTFLoader();
+				//加载模型文件，返回gltf对象
+				/*loader.load( './assets/models/koala.glb', function ( gltf ) {
+					console.log('控制台查看加载gltf文件返回的对象结构',gltf);
+					console.log('gltf对象场景属性',gltf.scene);
+					// 返回的场景对象gltf.scene插入到threejs场景中
+					
+					scene.add( gltf.scene );
+				})
+				*/
+				loader.load("./assets/models/koala.glb", function (gltf) {
+					const ambientLight = new THREE.AmbientLight(0xffffff, 1); // 白光，强度为1
+					scene.add(ambientLight);
+				
+					const dirLight = new THREE.DirectionalLight('rgb(253,253,253)', 5);
+					dirLight.position.set(1, 1, 1); // 根据需要自行调整位置
+					
+					scene.add(dirLight);
+				
+					gltf.scene.traverse((child) => {
+						if (child.isMesh) {
+						  child.material.side = THREE.DoubleSide; // 模型双面渲染
+						  child.castShadow = true;  // 光照是否有阴影
+						  child.receiveShadow = true;  // 是否接收阴影
+						  child.frustumCulled = false;
+						}
+					});
+					const box = new THREE.Box3().setFromObject(gltf.scene)
+					const x = (box.max.x - box.min.x)
+					const y = (box.max.y - box.min.y)
+					const z = (box.max.z - box.min.z)
+					const maxDim = Math.max(x, y, z)
+					const scale = 0.1 / maxDim
+					console.log(x,y,z, scale)
+					scene.scale.set(scale, scale, scale)
+
+					scene.add( gltf.scene );
+
+				 });
+				
 
 				//
 
@@ -68,14 +114,36 @@
 				const geometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.2, 32 ).translate( 0, 0.1, 0 );
 
 				function onSelect() {
+					console.log("select ")
 
 					if ( reticle.visible ) {
-
 						const material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
 						const mesh = new THREE.Mesh( geometry, material );
 						reticle.matrix.decompose( mesh.position, mesh.quaternion, mesh.scale );
 						mesh.scale.y = Math.random() * 2 + 1;
 						scene.add( mesh );
+
+						console.log("mesh:", mesh)
+						
+						loader.load("./assets/models/scene.glb", function (gltf) {
+							const ambientLight = new THREE.AmbientLight(0xffffff, 1); // 白光，强度为1
+							scene.add(ambientLight);
+						
+							const dirLight = new THREE.DirectionalLight('rgb(253,253,253)', 5);
+							dirLight.position.set(1, 1, 1); // 根据需要自行调整位置
+							scene.add(dirLight);
+							gltf.scene.traverse((child) => {
+								if (child.isMesh) {
+									child.material.side = THREE.DoubleSide; // 模型双面渲染
+								  child.castShadow = true;  // 光照是否有阴影
+								  child.receiveShadow = true;  // 是否接收阴影
+								  child.frustumCulled = false;
+								}
+							});
+							
+							console.log("gltf.scene:", gltf.scene)
+
+						 });
 
 					}
 
