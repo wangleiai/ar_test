@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>three.js ar - hit test</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-		<link type="text/css" rel="stylesheet" href="main.css">
-	</head>
-	<body>
 
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> ar - hit test<br/>(Chrome Android 81+)
-		</div>
+<head>
+	<title>three.js ar - hit test</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<link type="text/css" rel="stylesheet" href="main.css">
+</head>
 
-		<script type="importmap">
+<body>
+
+	<div id="info">
+		<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> ar - hit test<br />(Chrome Android
+		81+)
+	</div>
+
+	<script type="importmap">
 			{
 				"imports": {
 					"three": "./build/three.module.js",
@@ -21,224 +24,226 @@
 			}
 		</script>
 
-		<script type="module">
+	<script type="module">
 
-			import * as THREE from 'three';
-			import { ARButton } from 'three/addons/webxr/ARButton.js';
-			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+		import * as THREE from 'three';
+		import { ARButton } from 'three/addons/webxr/ARButton.js';
+		import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-			let container;
-			let camera, scene, renderer;
-			let controller;
+		let container;
+		let camera, scene, renderer;
+		let controller;
 
-			let reticle;
+		let reticle;
+		let koalaModel;
 
-			let hitTestSource = null;
-			let hitTestSourceRequested = false;
+		let hitTestSource = null;
+		let hitTestSourceRequested = false;
 
-			init();
-			animate();
+		init();
+		animate();
 
-			function init() {
+		function init() {
 
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
+			container = document.createElement('div');
+			document.body.appendChild(container);
 
-				scene = new THREE.Scene();
+			scene = new THREE.Scene();
 
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
+			// camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-				/*
-				const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 3 );
-				light.position.set( 0.5, 1, 0.25 );
-				scene.add( light ); 
-				*/
+			camera.position.z = 5;
+
+			/*
+			const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 3 );
+			light.position.set( 0.5, 1, 0.25 );
+			scene.add( light ); 
+			*/
 
 
-				// 创建GLTF加载器对象
-				const loader = new GLTFLoader();
-				//加载模型文件，返回gltf对象
-				/*loader.load( './assets/models/koala.glb', function ( gltf ) {
-					console.log('控制台查看加载gltf文件返回的对象结构',gltf);
-					console.log('gltf对象场景属性',gltf.scene);
-					// 返回的场景对象gltf.scene插入到threejs场景中
-					
-					scene.add( gltf.scene );
-				})
-				*/
-				loader.load("./assets/models/koala.glb", function (gltf) {
-					const ambientLight = new THREE.AmbientLight(0xffffff, 1); // 白光，强度为1
-					scene.add(ambientLight);
+			// 创建GLTF加载器对象
+			const loader = new GLTFLoader();
+			//加载模型文件，返回gltf对象
+			/*loader.load( './assets/models/koala.glb', function ( gltf ) {
+				console.log('控制台查看加载gltf文件返回的对象结构',gltf);
+				console.log('gltf对象场景属性',gltf.scene);
+				// 返回的场景对象gltf.scene插入到threejs场景中
 				
-					const dirLight = new THREE.DirectionalLight('rgb(253,253,253)', 5);
-					dirLight.position.set(1, 1, 1); // 根据需要自行调整位置
-					
-					scene.add(dirLight);
-				
-					gltf.scene.traverse((child) => {
-						if (child.isMesh) {
-						  child.material.side = THREE.DoubleSide; // 模型双面渲染
-						  child.castShadow = true;  // 光照是否有阴影
-						  child.receiveShadow = true;  // 是否接收阴影
-						  child.frustumCulled = false;
-						}
-					});
-					const box = new THREE.Box3().setFromObject(gltf.scene)
-					const x = (box.max.x - box.min.x)
-					const y = (box.max.y - box.min.y)
-					const z = (box.max.z - box.min.z)
-					const maxDim = Math.max(x, y, z)
-					const scale = 0.1 / maxDim
-					console.log(x,y,z, scale)
-					scene.scale.set(scale, scale, scale)
+				scene.add( gltf.scene );
+			})
+			*/
+			loader.load("./assets/models/koala.glb", function (gltf) {
+				const ambientLight = new THREE.AmbientLight(0xffffff, 1); // 白光，强度为1
+				scene.add(ambientLight);
 
-					scene.add( gltf.scene );
+				const dirLight = new THREE.DirectionalLight('rgb(253,253,253)', 5);
+				dirLight.position.set(1, 1, 1); // 根据需要自行调整位置
 
-				 });
-				
+				scene.add(dirLight);
 
-				//
-
-				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.xr.enabled = true;
-				container.appendChild( renderer.domElement );
-
-				//
-
-				document.body.appendChild( ARButton.createButton( renderer, { requiredFeatures: [ 'hit-test' ] } ) );
-
-				//
-
-				const geometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.2, 32 ).translate( 0, 0.1, 0 );
-
-				function onSelect() {
-					console.log("select ")
-
-					if ( reticle.visible ) {
-						const material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
-						const mesh = new THREE.Mesh( geometry, material );
-						reticle.matrix.decompose( mesh.position, mesh.quaternion, mesh.scale );
-						mesh.scale.y = Math.random() * 2 + 1;
-						scene.add( mesh );
-
-						console.log("mesh:", mesh)
-						
-						loader.load("./assets/models/scene.glb", function (gltf) {
-							const ambientLight = new THREE.AmbientLight(0xffffff, 1); // 白光，强度为1
-							scene.add(ambientLight);
-						
-							const dirLight = new THREE.DirectionalLight('rgb(253,253,253)', 5);
-							dirLight.position.set(1, 1, 1); // 根据需要自行调整位置
-							scene.add(dirLight);
-							gltf.scene.traverse((child) => {
-								if (child.isMesh) {
-									child.material.side = THREE.DoubleSide; // 模型双面渲染
-								  child.castShadow = true;  // 光照是否有阴影
-								  child.receiveShadow = true;  // 是否接收阴影
-								  child.frustumCulled = false;
-								}
-							});
-							
-							console.log("gltf.scene:", gltf.scene)
-
-						 });
-
+				gltf.scene.traverse((child) => {
+					if (child.isMesh) {
+						child.material.side = THREE.DoubleSide; // 模型双面渲染
+						child.castShadow = true;  // 光照是否有阴影
+						child.receiveShadow = true;  // 是否接收阴影
+						child.frustumCulled = false;
 					}
+				});
+				koalaModel = gltf.scene;
+				scene.add(koalaModel);
+				console.log(koalaModel)
 
-				}
+			});
 
-				controller = renderer.xr.getController( 0 );
-				controller.addEventListener( 'select', onSelect );
-				scene.add( controller );
-
-				reticle = new THREE.Mesh(
-					new THREE.RingGeometry( 0.15, 0.2, 32 ).rotateX( - Math.PI / 2 ),
-					new THREE.MeshBasicMaterial()
-				);
-				reticle.matrixAutoUpdate = false;
-				reticle.visible = false;
-				scene.add( reticle );
-
-				//
-
-				window.addEventListener( 'resize', onWindowResize );
-
-			}
-
-			function onWindowResize() {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			}
 
 			//
 
-			function animate() {
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.xr.enabled = true;
+			container.appendChild(renderer.domElement);
 
-				renderer.setAnimationLoop( render );
+			//
+
+			document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
+
+			//
+
+			function onSelect() {
+				// console.log("select ")
+
+				if (koalaModel.visible) {
+					scene.add(koalaModel);
+					// loader.load("./assets/models/koala.glb", function (gltf) {
+					// 	const ambientLight = new THREE.AmbientLight(0xffffff, 1); // 白光，强度为1
+					// 	scene.add(ambientLight);
+
+					// 	const dirLight = new THREE.DirectionalLight('rgb(253,253,253)', 5);
+					// 	dirLight.position.set(1, 1, 1); // 根据需要自行调整位置
+
+					// 	scene.add(dirLight);
+
+					// 	gltf.scene.traverse((child) => {
+					// 		if (child.isMesh) {
+					// 			child.material.side = THREE.DoubleSide; // 模型双面渲染
+					// 			child.castShadow = true;  // 光照是否有阴影
+					// 			child.receiveShadow = true;  // 是否接收阴影
+					// 			child.frustumCulled = false;
+					// 		}
+					// 	});
+
+					// 	scene.add(gltf.scene);
+
+					// });
+
+					const model = koalaModel.clone();
+
+					// Place the model on the spot where the marker is showing.
+					// model.position.setFromMatrixPosition(planeMarker.matrix);
+
+					// Rotate the model randomly to give a bit of variation.
+					model.rotation.y = Math.random() * (Math.PI * 2);
+					model.visible = true;
+
+					scene.add(model);
+
+				}
 
 			}
 
-			function render( timestamp, frame ) {
+			controller = renderer.xr.getController(0);
+			controller.addEventListener('select', onSelect);
+			scene.add(controller);
 
-				if ( frame ) {
+			// reticle = new THREE.Mesh(
+			// 	new THREE.RingGeometry(0.15, 0.2, 32).rotateX(- Math.PI / 2),
+			// 	new THREE.MeshBasicMaterial()
+			// );
+			// reticle.matrixAutoUpdate = false;
+			// reticle.visible = false;
+			// scene.add(reticle);
 
-					const referenceSpace = renderer.xr.getReferenceSpace();
-					const session = renderer.xr.getSession();
+			//
 
-					if ( hitTestSourceRequested === false ) {
+			window.addEventListener('resize', onWindowResize);
 
-						session.requestReferenceSpace( 'viewer' ).then( function ( referenceSpace ) {
+		}
 
-							session.requestHitTestSource( { space: referenceSpace } ).then( function ( source ) {
+		function onWindowResize() {
 
-								hitTestSource = source;
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
 
-							} );
+			renderer.setSize(window.innerWidth, window.innerHeight);
 
-						} );
+		}
 
-						session.addEventListener( 'end', function () {
+		//
 
-							hitTestSourceRequested = false;
-							hitTestSource = null;
+		function animate() {
 
-						} );
+			renderer.setAnimationLoop(render);
 
-						hitTestSourceRequested = true;
+		}
 
-					}
+		function render(timestamp, frame) {
 
-					if ( hitTestSource ) {
+			if (frame) {
 
-						const hitTestResults = frame.getHitTestResults( hitTestSource );
+				const referenceSpace = renderer.xr.getReferenceSpace();
+				const session = renderer.xr.getSession();
 
-						if ( hitTestResults.length ) {
+				if (hitTestSourceRequested === false) {
 
-							const hit = hitTestResults[ 0 ];
+					session.requestReferenceSpace('viewer').then(function (referenceSpace) {
 
-							reticle.visible = true;
-							reticle.matrix.fromArray( hit.getPose( referenceSpace ).transform.matrix );
+						session.requestHitTestSource({ space: referenceSpace }).then(function (source) {
 
-						} else {
+							hitTestSource = source;
 
-							reticle.visible = false;
+						});
 
-						}
+					});
+
+					session.addEventListener('end', function () {
+
+						hitTestSourceRequested = false;
+						hitTestSource = null;
+
+					});
+
+					hitTestSourceRequested = true;
+
+				}
+
+				if (hitTestSource) {
+
+					const hitTestResults = frame.getHitTestResults(hitTestSource);
+
+					if (hitTestResults.length) {
+
+						const hit = hitTestResults[0];
+
+						koalaModel.visible = true;
+						koalaModel.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+
+					} else {
+
+						koalaModel.visible = false;
 
 					}
 
 				}
 
-				renderer.render( scene, camera );
-
 			}
 
-		</script>
-	</body>
+			renderer.render(scene, camera);
+
+		}
+
+	</script>
+</body>
+
 </html>
