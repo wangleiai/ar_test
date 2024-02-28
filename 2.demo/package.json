@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "start": "http-server",
+    "dev": "concurrently --names 'http-server,localtunnel' --prefix-colors 'green,yellow' --kill-others-on-fail \"http-server\" \"lt --port 8080\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "http-server": "^14.1.1",
+    "localtunnel": "^2.0.2"
+  }
+}
