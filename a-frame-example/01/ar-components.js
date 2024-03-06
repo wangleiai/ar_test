@@ -38,6 +38,7 @@ class HitTest {
 	}
 
 	async sessionStart(options) {
+		console.log("options:", options)
 		this.session = this.renderer.xr.getSession();
 		
 		if (options.space) {
@@ -129,6 +130,7 @@ AFRAME.registerComponent("ar-hit-test", {
 			});
 
 			session.addEventListener('selectstart', ({ inputSource }) => {
+				console.log("start")
 				if (!this.data.doHitTest) return;
 				if (inputSource.profiles[0] === profileToSupport) {
 					this.hitTest = transientHitTest;
@@ -142,9 +144,10 @@ AFRAME.registerComponent("ar-hit-test", {
 			});
 
 			session.addEventListener('selectend', ({ inputSource }) => {
+				console.log("end")
 				this.needsSelectEventForInputSource = inputSource;
 
-				if (!this.data.doHitTest) return;
+				// if (!this.data.doHitTest) return;
 
 				if (this.hasFoundAPose) {
 					
