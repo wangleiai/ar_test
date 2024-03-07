@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <!-- the AFrame library -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="./script.js"></script>
+
+    <style>
+    #dom-overlay-message {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      padding: 1em;
+      background: #33333355;
+      color: white;
+      text-align: center;
+    }
+    </style>
+  </head>
+
+  <body>
+    <a-scene
+      webxr="requiredFeatures:hit-test; referenceSpaceType:local; optionalFeatures:dom-overlay; overlayElement:#dom-overlay "
+      ar-hit-test="target:#reticle;"
+    >
+      <a-camera position="0 0 2"></a-camera>
+      <a-entity
+        id="reticle"
+        ar-hit-test-done
+        geometry="primitive: ring; radiusInner: 0.15; radiusOuter: 0.2"
+        rotation="-90 0 0"
+      ></a-entity>
+      <!--       <a-box
+        id="object-to-show"
+        position="0 0 -2"
+        color="#4CC3D9"
+        visible="false"
+        animation="property: rotation; to: 0 360 0; easing: linear; dur:5000; loop:true"
+      ></a-box> -->
+      <a-gltf-model
+        id="object-to-show"
+        src="#tree"
+        visible="false"
+        animation="property: rotation; to: 0 360 0; easing: linear; dur:5000; loop:true"
+      >
+      </a-gltf-model>
+      <a-assets>
+        <a-asset-item
+          id="tree"
+          src="./assets/model.gltf"
+        ></a-asset-item>
+      </a-assets>
+    </a-scene>
+
+    <div id="dom-overlay">
+      <div id="dom-overlay-message">Click on AR button to start.</div>
+    </div>
+  </body>
+</html>

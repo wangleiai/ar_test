@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title> </title>
+    <meta name="description" content="Hello, AR World! • A-Frame" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="./main.js" type="module"></script>
+    <script src="./ar-cursor.js"></script>
+    <script src="./aframe-extras.js"></script>
+    <script>
+        AFRAME.registerComponent("follow-shadow", {
+            schema: { type: "selector" },
+            init() {
+                this.el.object3D.renderOrder = -1;
+            },
+            tick() {
+                if (this.data) {
+                    this.el.object3D.position.copy(this.data.object3D.position);
+                    this.el.object3D.position.y -= 0.001; // stop z-fighting
+                }
+            },
+        });
+    </script>
+</head>
+
+<body>
+
+    <div id="button" style="height: 10px;">
+        <button type="button">重新放置</button>
+
+    </div>
+    <div id="dom-overlay" style="margin-top: 15px;"> </div>
+    <a-scene loading-screen="dotsColor: #09098f; backgroundColor: white"
+        webxr="overlayElement:#dom-overlay; optionalFeatures:hit-test;" debug
+        ar-hit-test="target:#objects; src:./asset//reticle.png; type:map; enabled: true;"
+        renderer="physicallyCorrectLights:true;colorManagement:true;exposure:1; logarithmicDepthBuffer: false; sortObjects: false;"
+        shadow="type:pcfsoft" ar-cursor raycaster="objects: #objects;">
+        <a-assets>
+            <a-asset-item id="badger_3d" src="./asset/Badger.glb"></a-asset-item>
+            <a-asset-item id="car_3d" src="./asset/Car.glb"></a-asset-item>
+
+        </a-assets>
+
+        <a-entity light="type: ambient; color: #DDD; groundColor: #DDD; intensity: 1.0"></a-entity>
+        <a-light id="dirlight" type="directional" light="castShadow:true;" position="1 1 1" intensity="4"
+            shadow-camera-automatic="[ar-shadow-helper],#objects"></a-light>
+
+        <a-entity ar-shadow-helper="target:#objects;light:#dirlight;" visible="false">
+            <a-plane rotation="-90 0 0" shadow="cast:false;receive:true;" position="0 0.01 0"
+                material="shader:shadow; depthWrite:false; opacity:0.9;"></a-plane>
+        </a-entity>
+
+        <a-entity camera="far:10000.00; fov:80.00; near:0.0005" position="0 0.4 0"
+            wasd-controls="acceleration:10;"></a-entity>
+
+        <a-entity id="objects" scale="1 1 1" position="0 0 0" shadow>
+            <a-box id="reticle_box" visible="false" scale="1 1 1" position="0 0 0" rotation="0 0 0" color="#4CC3D9"
+                material="transparent:true; opacity:0.0;" shadow="cast:false; receive:false;"></a-box>
+            <a-entity id="badger" gltf-model="#badger_3d" visible="false" shadow="receive: false; cast: false"
+                scale="0.00002 0.00002 0.00002" position="0 -1 0" rotation="0 0 0"
+                animation-mixer="clip: clip; loop: repeat; repetitions: infinity; timeScale: 0.5; clampWhenFinished: false;">
+            </a-entity>
+            <a-entity id="car" gltf-model="#car_3d" visible="false" shadow="receive: false; cast: true"
+                scale="0.00002 0.00002 0.00002" position="0 -1 0" rotation="0 0 0"
+                animation-mixer="clip: clip; loop: repeat; repetitions: infinity; timeScale: 0.5; clampWhenFinished: false;">
+            </a-entity>
+        </a-entity>
+
+        <a-sky color="#ECECEC" hide-on-enter-ar></a-sky>
+    </a-scene>
+
+
+</body>
+
+</html>
