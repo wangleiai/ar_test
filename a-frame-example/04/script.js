@@ -22,17 +22,19 @@ AFRAME.registerComponent("ar-hit-test-done", {
       );
   
       this.el.sceneEl.addEventListener("ar-hit-test-select", function (e) {
-  //       console.log(e);
-  //       let position = e.detail.position;
-  //       let objectToShow = document.getElementById("object-to-show");
-  //       objectToShow.setAttribute("position", position);
-  //       objectToShow.setAttribute("visible", true);
-  //       message.textContent = "Object placed successfully";
+        let position1 = e.detail.position;
+        console.log(e);
+        console.log(position1);
+
+        let objectToShow1 = document.getElementById("cylinder");
+        objectToShow1.setAttribute("position", position1);
+        objectToShow1.setAttribute("visible", true);
+        message.textContent = "Object placed successfully";
   
-  //       console.log("this.el.sceneEl ", el.sceneEl);
+        console.log("this.el.sceneEl ", el.sceneEl);
         
         
-            const scene =document.querySelector("a-scene")
+        const scene =document.querySelector("a-scene")
         console.log(e);
         let position = e.detail.position;
         let objectToShow = document.getElementById("object-to-show");
